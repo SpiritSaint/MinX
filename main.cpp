@@ -1,8 +1,10 @@
 #include <iostream>
-#include <utility>
 #include <vector>
 #include <regex>
 
+/**
+ * RegEx of var declaration
+ */
 const std::string VAR_DECLARATION = "([a-z])=\\w+";
 
 /**
@@ -14,6 +16,10 @@ public:
     std::string value;
 };
 
+/**
+ * Variables
+ */
+std::vector<Type> variables;
 
 /**
  * Print
@@ -25,17 +31,14 @@ void print(const std::string& var)
     std::cout << var;
 }
 
-
 /**
  * Native functions
  */
-std::map<std::string, std::function<void(std::string)>> nativeFunctions = {
-        { "print", [](std::string param) {
-            return print(param);
-        }}
+std::map<std::string, std::function<void(std::string)>> nativeFunctions =
+{
+    { "print", [](std::string param) { return print(param); }},
+    { "sum", [](std::string param) { return print(param); }},
 };
-
-std::vector<Type> variables;
 
 /**
  * Detect statement
@@ -61,8 +64,7 @@ std::vector<std::string> detectStatements(const std::string& code)
  * @param pattern
  * @return
  */
-bool checkRegexOverString(const std::string& str, const std::string& pattern)
-{
+bool checkRegexOverString(const std::string& str, const std::string& pattern) {
     return std::regex_match(str, std::regex(pattern));
 }
 
@@ -121,13 +123,18 @@ std::vector<std::string> detectStack(const std::string& statement)
     return stack;
 }
 
+/**
+ * Get value
+ *
+ * @param identifier
+ * @return
+ */
 std::string getValue(const std::string& identifier)
 {
     Type type;
     int index = 0;
     std::string value;
     bool founded = false;
-
     while (!founded && index <= variables.size()) {
         type = variables.at(index);
         if (type.name == identifier) {
@@ -136,7 +143,6 @@ std::string getValue(const std::string& identifier)
         }
         index++;
     }
-
     return value;
 }
 
@@ -159,7 +165,6 @@ void runStack(std::vector<std::string> stack) {
 void executeMethod(std::string& statement)
 {
     std::vector<std::string> stack = detectStack(statement);
-
     runStack(stack);
 }
 
@@ -171,7 +176,6 @@ void executeMethod(std::string& statement)
 void runStatement(std::string statement)
 {
     statement.erase(remove(statement.begin(), statement.end(), ' '), statement.end());
-
     if (checkRegexOverString(statement, VAR_DECLARATION)) {
         assignVariable(statement);
     } else {
