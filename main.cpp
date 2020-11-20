@@ -31,7 +31,7 @@ void print(const std::string& var)
  */
 std::map<std::string, std::function<void(std::string)>> nativeFunctions = {
         { "print", [](std::string param) {
-            return print(std::move(param));
+            return print(param);
         }}
 };
 
@@ -134,6 +134,7 @@ std::string getValue(const std::string& identifier)
             value = type.value;
             founded = true;
         }
+        index++;
     }
 
     return value;
@@ -155,9 +156,9 @@ void runStack(std::vector<std::string> stack) {
  *
  * @param statement
  */
-void executeMethod(std::string statement)
+void executeMethod(std::string& statement)
 {
-    std::vector<std::string> stack = detectStack(std::move(statement));
+    std::vector<std::string> stack = detectStack(statement);
 
     runStack(stack);
 }
@@ -186,7 +187,7 @@ void runStatement(std::string statement)
  */
 void parseCode(std::string code)
 {
-    std::vector<std::string> statements = detectStatements(std::move(code));
+    std::vector<std::string> statements = detectStatements(code);
     for (auto & statement : statements) {
         runStatement(statement);
     }
@@ -199,6 +200,6 @@ void parseCode(std::string code)
  */
 int main()
 {
-    parseCode("a = awesome;print(a);");
+    parseCode("a = awesome;c = 100;print(a);print(c);");
     return 0;
 }
