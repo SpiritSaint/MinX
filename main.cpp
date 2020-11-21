@@ -252,7 +252,7 @@ void executeMethod(std::string& statement)
  */
 void runStatement(std::string statement)
 {
-    statement.erase(remove(statement.begin(), statement.end(), ' '), statement.end());
+    removeChar(statement, ' ');
     if (checkRegexOverString(statement, INTEGER_DECLARATION_STATEMENT) or
         checkRegexOverString(statement, STRING_DECLARATION_STATEMENT)) {
         assignVariable(statement);
