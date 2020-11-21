@@ -3,9 +3,23 @@
 #include <regex>
 
 /**
- * RegEx of var declaration
+ * RegEx
  */
-const std::string VAR_DECLARATION = "([a-z])=\\w+";
+const std::string INTEGER_DECLARATION_STATEMENT = "([a-z])=\\w+";
+const std::string STRING_DECLARATION_STATEMENT = R"(([a-z])=\"([^)]+)\")";
+const std::string STRING_DECLARATION = R"(\"([^)]+)\")";
+const std::string INTEGER_DECLARATION = "^[0-9]*$";
+
+/**
+ * Remove character
+ *
+ * @param string
+ * @param letter
+ */
+void removeChar(std::string& string, char letter)
+{
+    string.erase(remove(string.begin(), string.end(), letter), string.end());
+}
 
 /**
  * Type
@@ -14,8 +28,12 @@ class Type {
 public:
     std::string name;
     std::string value;
+    std::string type;
 };
 
+/**
+ * ValueResult
+ */
 class ValueResult {
 public:
     std::string name;
@@ -23,17 +41,36 @@ public:
     bool founded = false;
 };
 
+/**
+ * UndefinedVariableException
+ */
 struct UndefinedVariableException : public std::exception {
 public:
     std::string identifier;
 
     UndefinedVariableException(std::string identifier) {
         this->identifier = identifier;
-    }
+    };
 
     const char * what () const throw () {
         return "Undefined variable";
-    }
+    };
+};
+
+/**
+ * UnsupportedVariableException
+ */
+struct UnsupportedVariableException : public std::exception {
+public:
+    std::string identifier;
+
+    UnsupportedVariableException(std::string identifier) {
+        this->identifier = identifier;
+    };
+
+    const char * what () const throw () {
+        return "Undefined variable";
+    };
 };
 
 /**
@@ -98,6 +135,7 @@ void assignVariable(const std::string& statement)
     std::string name;
     std::string token = "=";
     std::string value;
+    std::string type;
     bool tokenFounded = false;
 
     for (char letter : statement) {
@@ -109,9 +147,19 @@ void assignVariable(const std::string& statement)
             name.push_back(letter);
     }
 
+    if (checkRegexOverString(value, STRING_DECLARATION)) {
+        type = "string";
+        removeChar(value, '"');
+    } else if(checkRegexOverString(value, INTEGER_DECLARATION)) {
+        type = "integer";
+    } else {
+        throw UnsupportedVariableException(name);
+    }
+
     Type variable;
     variable.name = name;
     variable.value = value;
+    variable.type = type;
 
     variables.push_back(variable);
 }
@@ -149,12 +197,13 @@ std::vector<std::string> detectStack(const std::string& statement)
  * @param identifier
  * @return
  */
-ValueResult getValue(const std::string& identifier)
+std::string getValue(const std::string& identifier)
 {
     Type type;
     int index = 0;
     std::string value;
     bool founded = false;
+
     while (!founded && index < variables.size()) {
         type = variables.at(index);
         if (type.name == identifier) {
@@ -169,13 +218,9 @@ ValueResult getValue(const std::string& identifier)
     vr.name = identifier;
     vr.founded = founded;
 
-    if (founded) {
-        vr.value = value;
-    } else {
-        throw UndefinedVariableException(identifier);
-    }
+    if (founded) { vr.value = value; } else { throw UndefinedVariableException(identifier); }
 
-    return vr;
+    return value;
 }
 
 /**
@@ -186,7 +231,7 @@ ValueResult getValue(const std::string& identifier)
 void runStack(std::vector<std::string> stack) {
     std::string method = stack.at(0);
     std::string parameter = stack.at(1);
-    nativeFunctions[method](getValue(parameter).value);
+    nativeFunctions[method](getValue(parameter));
 }
 
 /**
@@ -208,7 +253,8 @@ void executeMethod(std::string& statement)
 void runStatement(std::string statement)
 {
     statement.erase(remove(statement.begin(), statement.end(), ' '), statement.end());
-    if (checkRegexOverString(statement, VAR_DECLARATION)) {
+    if (checkRegexOverString(statement, INTEGER_DECLARATION_STATEMENT) or
+        checkRegexOverString(statement, STRING_DECLARATION_STATEMENT)) {
         assignVariable(statement);
     } else {
         executeMethod(statement);
@@ -236,6 +282,8 @@ void parseCode(std::string code)
  */
 int main()
 {
-    parseCode("a = awesome;c = 100;print(a);print(f);");
+    std::string string;
+    std::getline(std::cin, string);
+    parseCode(string);
     return 0;
 }
