@@ -13,5 +13,5 @@ a = 10;
 ### Print values
 
 ```
-a = 10;print(a);
+a = 10;print(a);b = "somestring";print(b);
 ```
