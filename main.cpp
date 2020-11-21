@@ -16,6 +16,26 @@ public:
     std::string value;
 };
 
+class ValueResult {
+public:
+    std::string name;
+    std::string value;
+    bool founded = false;
+};
+
+struct UndefinedVariableException : public std::exception {
+public:
+    std::string identifier;
+
+    UndefinedVariableException(std::string identifier) {
+        this->identifier = identifier;
+    }
+
+    const char * what () const throw () {
+        return "Undefined variable";
+    }
+};
+
 /**
  * Variables
  */
@@ -129,13 +149,13 @@ std::vector<std::string> detectStack(const std::string& statement)
  * @param identifier
  * @return
  */
-std::string getValue(const std::string& identifier)
+ValueResult getValue(const std::string& identifier)
 {
     Type type;
     int index = 0;
     std::string value;
     bool founded = false;
-    while (!founded && index <= variables.size()) {
+    while (!founded && index < variables.size()) {
         type = variables.at(index);
         if (type.name == identifier) {
             value = type.value;
@@ -143,7 +163,19 @@ std::string getValue(const std::string& identifier)
         }
         index++;
     }
-    return value;
+
+    ValueResult vr;
+
+    vr.name = identifier;
+    vr.founded = founded;
+
+    if (founded) {
+        vr.value = value;
+    } else {
+        throw UndefinedVariableException(identifier);
+    }
+
+    return vr;
 }
 
 /**
@@ -154,7 +186,7 @@ std::string getValue(const std::string& identifier)
 void runStack(std::vector<std::string> stack) {
     std::string method = stack.at(0);
     std::string parameter = stack.at(1);
-    nativeFunctions[method](getValue(parameter));
+    nativeFunctions[method](getValue(parameter).value);
 }
 
 /**
@@ -204,6 +236,6 @@ void parseCode(std::string code)
  */
 int main()
 {
-    parseCode("a = awesome;c = 100;print(a);print(c);");
+    parseCode("a = awesome;c = 100;print(a);print(f);");
     return 0;
 }
