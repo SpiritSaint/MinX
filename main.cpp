@@ -69,7 +69,7 @@ public:
     };
 
     const char * what () const throw () {
-        return "Undefined variable";
+        return "Unsupported variable";
     };
 };
 
