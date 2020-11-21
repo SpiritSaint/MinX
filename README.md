@@ -7,7 +7,8 @@ MinX is a basic programming language written in C ++ for different uses. In its 
 ### Variable assignment
 
 ```
-a = 10;
+a = 10; // for integers
+b = "somestring" // for strings
 ```
 
 ### Print values
